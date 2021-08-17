@@ -1,0 +1,74 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  </head>
+  <body bgcolor="#ff9900">
+    <br><br><br>
+    <div style="position:relative;left:100px">
+      <audio id="audio" width="480" controls></audio>
+      <br>
+      <button id="run">Run scenario</button>
+    </div>
+	
+    <script>
+      var audio = $("#audio")[0];
+      var assetURL = 'https://kkanag314.github.io/testAudio/audio'
+      var mimeCodec = 'audio/webm; codecs="opus"';
+      var mediaSource = null;
+
+      function setup() {
+          console.log('(1) setting up MediaSource...');
+          if ('MediaSource' in window && MediaSource.isTypeSupported(mimeCodec)) {
+              mediaSource = new MediaSource;
+              mediaSource.addEventListener('sourceopen', onSourceOpen, {once:true});
+              console.log(mediaSource.readyState, '(should be "closed")');
+              audio.src = URL.createObjectURL(mediaSource);
+          } else {
+              console.error('Unsupported MIME type or codec: ', mimeCodec);
+          }
+      }
+
+      function onSourceOpen() {
+          console.log('(2) setting up SourceBuffer...');
+          console.log(mediaSource.readyState, '(should be "open")');
+          var sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
+          fetchAB(assetURL, function (buf) {
+              console.log(buf);
+              sourceBuffer.appendBuffer(buf);
+          });
+      }
+
+      function fetchAB(url, cb) {
+          console.log(url);
+          var xhr = new XMLHttpRequest;
+          xhr.open('get', url);
+          xhr.responseType = 'arraybuffer';
+          xhr.onload = function () {
+              cb(xhr.response);
+          };
+          xhr.send();
+      };
+	  
+	  $(document).keypress(function () {
+		setup();
+          audio.addEventListener('canplay', function(_) {
+              console.log('(3) playing...');
+              audio.play();
+          }, {once:true});
+	  });
+	  
+	  $("#run").on("click", function() {
+		setup();
+          audio.addEventListener('canplay', function(_) {
+              console.log('(3) playing...');
+              audio.play();
+          }, {once:true});
+});
+	  
+	 
+	
+	  
+    </script>
+  </body>
+</html>
